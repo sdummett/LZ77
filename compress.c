@@ -16,7 +16,7 @@ int find_last_occurrence(const unsigned char *data, size_t data_len, const unsig
 	return -1;
 }
 
-t_tuple get_tuple(char *search_buf, int search_size, char *look_ahead_buf, int look_ahead_size)
+tuple_t get_tuple(char *search_buf, int search_size, char *look_ahead_buf, int look_ahead_size)
 {
 	// printf("? > search -> %.*s\n", search_size, search_buf);
 	// printf("? > look   -> %.*s\n", look_ahead_size, look_ahead_buf);
@@ -30,7 +30,7 @@ t_tuple get_tuple(char *search_buf, int search_size, char *look_ahead_buf, int l
 			// printf(">> LZ77 offset: %d\n", search_size - index);
 			// printf(">> LZ77 size  : %d\n", look_ahead_size);
 			// printf("> %s\n", &search_buf[index]);
-			t_tuple t = {
+			tuple_t t = {
 				.offset = search_size - index,
 				.size = look_ahead_size,
 				.next_value = 0,
@@ -38,7 +38,7 @@ t_tuple get_tuple(char *search_buf, int search_size, char *look_ahead_buf, int l
 			return t;
 		}
 	}
-	t_tuple t = {
+	tuple_t t = {
 		.offset = 0,
 		.size = 0,
 		.next_value = 0,
@@ -46,12 +46,13 @@ t_tuple get_tuple(char *search_buf, int search_size, char *look_ahead_buf, int l
 	return t;
 }
 
-t_tuple *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, uint64_t *tuples_len)
+// described the required args (also in the readme)
+tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, uint64_t *tuples_len)
 {
-	// uint64_t compressed_data_size = sizeof(t_tuple) * 1024;
-	// printf("sizeof(t_tuple) * 1024 = %ld\n", sizeof(t_tuple) * 1024);
+	// uint64_t compressed_data_size = sizeof(tuple_t) * 1024;
+	// printf("sizeof(tuple_t) * 1024 = %ld\n", sizeof(tuple_t) * 1024);
 
-	t_tuple *tuples = malloc(sizeof(t_tuple) * 1024);
+	tuple_t *tuples = malloc(sizeof(tuple_t) * 1024);
 	if (tuples == NULL)
 	{
 		printf("malloc failed\n");
@@ -84,7 +85,7 @@ t_tuple *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int lo
 			lab_sz = look_ahead_size - lab_sz;
 		}
 
-		t_tuple t = get_tuple(data + sb_offset, sb_sz, data + lab_offset, lab_sz);
+		tuple_t t = get_tuple(data + sb_offset, sb_sz, data + lab_offset, lab_sz);
 		t.next_value = *(data + lab_offset + t.size);
 
 		// printf("(%d, %d, %c)\n", t.offset, t.size, t.next_value);
