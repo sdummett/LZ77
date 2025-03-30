@@ -47,27 +47,18 @@ tuple_t get_tuple(char *search_buf, int search_size, char *look_ahead_buf, int l
 }
 
 // described the required args (also in the readme)
-tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, uint64_t *tuples_len)
+tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, size_t *tuples_len)
 {
-	// uint64_t compressed_data_size = sizeof(tuple_t) * 1024;
-	// printf("sizeof(tuple_t) * 1024 = %ld\n", sizeof(tuple_t) * 1024);
-
-	tuple_t *tuples = malloc(sizeof(tuple_t) * 1024);
+	size_t cur_alloc_size = sizeof(tuple_t) * 1024;
+	tuple_t *tuples = malloc(cur_alloc_size);
 	if (tuples == NULL)
-	{
-		printf("malloc failed\n");
 		return NULL;
-	}
 
 	int lab_offset = 0;
 	int tuples_index = 0;
 	while (lab_offset < data_len)
 	{
 		int sb_offset = lab_offset - search_size < 0 ? 0 : lab_offset - search_size;
-		// printf("[+] sb_offset  = %d\n", sb_offset);
-
-		// printf("sb_offset + search_size = %d\n", sb_offset + search_size);
-		// printf("[+] lab_offset = %d\n", lab_offset);
 
 		int sb_sz = search_size;
 		if (sb_offset + sb_sz > lab_offset)
@@ -88,13 +79,24 @@ tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int lo
 		tuple_t t = get_tuple(data + sb_offset, sb_sz, data + lab_offset, lab_sz);
 		t.next_value = *(data + lab_offset + t.size);
 
-		// printf("(%d, %d, %c)\n", t.offset, t.size, t.next_value);
 		tuples[tuples_index] = t;
 		lab_offset += t.size + 1;
 		tuples_index += 1;
 
-		// check here if tuples_index > 1024
-		// and remalloc a larger memory area
+		if (tuples_index > cur_alloc_size / sizeof(tuple_t))
+		{
+			size_t old_alloc_size = cur_alloc_size;
+			cur_alloc_size += (sizeof(tuple_t) * 1024);
+			tuple_t *new_alloc = malloc(cur_alloc_size);
+			if (!new_alloc)
+			{
+				free(tuples);
+				return NULL;
+			}
+			memcpy(new_alloc, tuples, old_alloc_size);
+			free(tuples);
+			tuples = new_alloc;
+		}
 	}
 	*tuples_len = tuples_index;
 	return tuples;

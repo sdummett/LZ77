@@ -21,36 +21,102 @@ void log_selected_options(program_options_t *options)
 	}
 }
 
+char *read_entire_file(const char *filename, size_t *out_size)
+{
+	char error_msg[256];
+	FILE *fp = fopen(filename, "rb"); // Open in binary mode
+	if (!fp)
+	{
+		snprintf(error_msg, sizeof(error_msg), "[-] Opening file %s failed", filename);
+		perror(error_msg);
+		return NULL;
+	}
+
+	// Seek to end to find size
+	if (fseek(fp, 0, SEEK_END) != 0)
+	{
+		snprintf(error_msg, sizeof(error_msg), "[-] Seeking file %s failed", filename);
+		perror(error_msg);
+		fclose(fp);
+		return NULL;
+	}
+
+	long size = ftell(fp);
+	if (size < 0)
+	{
+		snprintf(error_msg, sizeof(error_msg), "[-] Telling file %s failed", filename);
+		perror(error_msg);
+		fclose(fp);
+		return NULL;
+	}
+
+	rewind(fp); // Go back to start of file
+
+	char *buffer = malloc(size);
+	if (!buffer)
+	{
+		perror("[-] Allocating memory failed");
+		fclose(fp);
+		return NULL;
+	}
+
+	size_t read_size = fread(buffer, 1, size, fp);
+	if (read_size != (size_t)size)
+	{
+		snprintf(error_msg, sizeof(error_msg), "[-] Reading file %s failed", filename);
+		perror(error_msg);
+		free(buffer);
+		fclose(fp);
+		return NULL;
+	}
+
+	fclose(fp);
+
+	if (out_size)
+		*out_size = size;
+
+	return buffer;
+}
+
 void compress(program_options_t *options)
 {
-	char *data = "BASILE BAVE DANS SON BAVOIR";
-	printf("[+] Original text:\n%s\n\n", data);
+	char error_msg[256];
 
-	size_t data_len = strlen(data);
+	size_t data_len;
+	uint8_t *data = read_entire_file(options->input_file, &data_len);
+	if (!data)
+	{
+		exit(42);
+	}
 
-	uint64_t tuples_len;
-
-	tuple_t *tuples = lz77_compress((uint8_t *)data, (uint64_t)data_len, options->search_size, options->lookahead_size, &tuples_len);
-
-	// printf("tuples_len = %ld\n", tuples_len);
-	// display_tuples(tuples, tuples_len);
-
-	// remove the O_TRUNC
-	// and add detailed message error
-	int fd = open(options->output_file, O_CREAT | O_WRONLY, 0644);
+	int fd = open(options->output_file, O_CREAT | O_WRONLY | O_EXCL, 0644);
 	if (fd < 0)
 	{
-		fprintf(stderr, "[-] Opening file %s failed: %s\n", options->output_file, strerror(fd));
-		free(tuples);
+		snprintf(error_msg, sizeof(error_msg), "[-] Opening file %s failed", options->output_file);
+		perror(error_msg);
 		exit(44);
 	}
 
-	// display_tuples(tuples, tuples_index);
+	uint64_t tuples_len;
+	tuple_t *tuples = lz77_compress((uint8_t *)data, (uint64_t)data_len, options->search_size, options->lookahead_size, &tuples_len);
+
+	if (!tuples)
+	{
+		perror("[-] LZ77_compress core function failed");
+		free(tuples);
+		close(fd);
+		exit(44);
+	}
+
+	free(data);
+
+	// display_tuples(tuples, tuples_len);
 
 	int ret = write(fd, tuples, sizeof(tuple_t) * tuples_len);
 	if (ret < 0)
 	{
-		fprintf(stderr, "[-] Writing to file %s failed: %s\n", options->output_file, strerror(ret));
+		snprintf(error_msg, sizeof(error_msg), "[-] Writing to file %s failed", options->output_file);
+		perror(error_msg);
 		free(tuples);
 		exit(45);
 	}

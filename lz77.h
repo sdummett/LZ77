@@ -36,7 +36,7 @@ typedef struct s_program_options
 	int search_size;
 } program_options_t;
 
-tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, uint64_t *tuples_len);
+tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, size_t *tuples_len);
 int parse_args(int argc, char *argv[], program_options_t *options);
 
 #endif
