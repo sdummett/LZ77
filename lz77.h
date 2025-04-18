@@ -24,24 +24,31 @@ typedef struct __attribute__((__packed__)) tuple_s
 	uint8_t next_value;
 } tuple_t;
 
+// --- LZ77 Core Functions --- //
+tuple_t *lz77_encode(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, size_t *tuple_count);
+uint8_t *lz77_decode(tuple_t *tuples, size_t tuple_count, size_t data_len);
+
 typedef enum e_mode
 {
 	MODE_NONE,
 	MODE_COMPRESS,
 	MODE_DECOMPRESS
-} mode_s;
+} mode__t;
 
 typedef struct s_program_options
 {
-	mode_t mode;
+	mode__t mode;
 	char *input_file;
 	char *output_file;
 	int lookahead_size;
 	int search_size;
 } program_options_t;
 
-tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, size_t *tuples_len);
-uint8_t *lz77_decompress(tuple_t *tuples, size_t tuples_len, size_t data_len);
+void compress(program_options_t *options);
+void decompress(program_options_t *options);
+
+// --- Helpers --- //
+char *read_entire_file(const char *filename, size_t *out_size);
 int parse_args(int argc, char *argv[], program_options_t *options);
 
 #endif
