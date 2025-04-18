@@ -83,7 +83,7 @@ tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int lo
 		lab_offset += t.size + 1;
 		tuples_index += 1;
 
-		if (tuples_index > cur_alloc_size / sizeof(tuple_t))
+		if (tuples_index >= cur_alloc_size / sizeof(tuple_t))
 		{
 			size_t old_alloc_size = cur_alloc_size;
 			cur_alloc_size += (sizeof(tuple_t) * 1024);

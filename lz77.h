@@ -13,6 +13,10 @@
 #define DEFAULT_SEARCH_SIZE 8
 #define DEFAULT_OUTPUT_FILE "data.lz77"
 
+// LZ77 file format
+//        size_t          uint8[]
+// | ORIGINAL_FILE_SIZE |  DATA   |
+
 typedef struct __attribute__((__packed__)) tuple_s
 {
 	uint16_t offset;
@@ -37,6 +41,7 @@ typedef struct s_program_options
 } program_options_t;
 
 tuple_t *lz77_compress(uint8_t *data, uint64_t data_len, int search_size, int look_ahead_size, size_t *tuples_len);
+uint8_t *lz77_decompress(tuple_t *tuples, size_t tuples_len, size_t data_len);
 int parse_args(int argc, char *argv[], program_options_t *options);
 
 #endif
