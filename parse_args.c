@@ -37,6 +37,7 @@ int parse_args(int argc, char *argv[], program_options_t *options)
 		{"lookahead", required_argument, 0, 'l'},
 		{"search", required_argument, 0, 's'},
 		{"output", required_argument, 0, 'o'},
+		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}};
 
 	options->mode = MODE_NONE;
@@ -45,7 +46,7 @@ int parse_args(int argc, char *argv[], program_options_t *options)
 	options->lookahead_size = 0;
 	options->search_size = 0;
 
-	while ((opt = getopt_long(argc, argv, "c:d:l:s:o:", long_options, &option_index)) != -1)
+	while ((opt = getopt_long(argc, argv, "c:d:l:s:o:h", long_options, &option_index)) != -1)
 	{
 		switch (opt)
 		{
@@ -76,14 +77,25 @@ int parse_args(int argc, char *argv[], program_options_t *options)
 		case 'o':
 			options->output_file = optarg;
 			break;
+		case 'h':
+			print_help(argv[0]);
+			return 0;
 		default:
+			print_help(argv[0]);
 			return 0;
 		}
 	}
 
+	if (options->lookahead_size == 0)
+		options->lookahead_size = DEFAULT_LOOKAHEAD_SIZE;
+	if (options->search_size == 0)
+		options->search_size = DEFAULT_SEARCH_SIZE;
+	if (!options->output_file)
+		options->output_file = DEFAULT_OUTPUT_FILE;
+
 	if (options->mode == MODE_NONE || options->input_file == NULL)
 	{
-		print_help("lz77");
+		print_help(argv[0]);
 		return 0;
 	}
 

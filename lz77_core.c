@@ -77,7 +77,9 @@ tuple_t *lz77_encode(uint8_t *data, uint64_t data_len, int search_size, int look
 		}
 
 		tuple_t t = lz77_find_longest_match(data + search_offset, search_len, data + lookahead_offset, lookahead_len);
-		t.next_value = *(data + lookahead_offset + t.size);
+		if (lookahead_offset + t.size < data_len) {
+			t.next_value = *(data + lookahead_offset + t.size);
+		}
 
 		tuples[tuples_index] = t;
 		lookahead_offset += t.size + 1;
@@ -114,7 +116,9 @@ uint8_t *lz77_decode(tuple_t *tuples, size_t tuple_count, size_t data_len)
 		if (tuples[i].offset)
 		{
 			memmove(&data[data_index], &data[data_index - tuples[i].offset], tuples[i].size);
-			data[data_index + tuples[i].size] = tuples[i].next_value;
+			if (data_index + tuples[i].size < data_len) {
+				data[data_index + tuples[i].size] = tuples[i].next_value;
+			}
 		}
 		if (tuples[i].offset == 0)
 		{
@@ -123,6 +127,5 @@ uint8_t *lz77_decode(tuple_t *tuples, size_t tuple_count, size_t data_len)
 
 		data_index += tuples[i].size + 1;
 	}
-	printf("\n");
 	return data;
 }

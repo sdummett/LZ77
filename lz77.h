@@ -9,8 +9,8 @@
 #include <fcntl.h>
 #include <getopt.h>
 
-#define DEFAULT_LOOKAHEAD_SIZE 3
-#define DEFAULT_SEARCH_SIZE 8
+#define DEFAULT_LOOKAHEAD_SIZE 256
+#define DEFAULT_SEARCH_SIZE 4096
 #define DEFAULT_OUTPUT_FILE "data.lz77"
 
 // LZ77 file format
@@ -44,11 +44,12 @@ typedef struct s_program_options
 	int search_size;
 } program_options_t;
 
-void compress(program_options_t *options);
-void decompress(program_options_t *options);
+int compress(program_options_t *options);
+int decompress(program_options_t *options);
 
 // --- Helpers --- //
 char *read_entire_file(const char *filename, size_t *out_size);
 int parse_args(int argc, char *argv[], program_options_t *options);
+void display_tuples(tuple_t *tuples, int size);
 
 #endif

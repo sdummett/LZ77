@@ -56,3 +56,11 @@ char *read_entire_file(const char *filename, size_t *out_size)
 
 	return buffer;
 }
+
+void display_tuples(tuple_t *tuples, int size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		printf("(%d, %d, %c)\n", tuples[i].offset, tuples[i].size, tuples[i].next_value);
+	}
+}
