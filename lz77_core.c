@@ -123,10 +123,14 @@ size_t lz77_encode_match(match_t *match, uint8_t *encoded, size_t out_idx)
 
 /* Compress `input` and return a freshly allocated buffer containing the
  * encoded stream. The caller owns the resulting memory. */
+/* The returned buf looks like
+ * | original size (sizeof(size_t)) | compressed data |
+ */
 uint8_t *lz77_encode(uint8_t *input, uint64_t input_len,
 					 int search_size, int lookahead_size,
 					 size_t *encoded_len_out)
 {
+	size_t original_input_len = input_len;
 	size_t capacity = 8192; /* grows in 8 kB chunks */
 	uint8_t *encoded = malloc(capacity);
 	if (!encoded)
@@ -210,7 +214,15 @@ uint8_t *lz77_encode(uint8_t *input, uint64_t input_len,
 		}
 	}
 
-	*encoded_len_out = out_idx; /* let the caller know how many bytes we produced */
+	*encoded_len_out = out_idx + sizeof(size_t); /* let the caller know how many bytes we produced */
+	if (*encoded_len_out > capacity)
+	{
+		capacity += sizeof(size_t);
+		encoded = realloc(encoded, capacity);
+	}
+	// we add the original size at the beggining of the buffer
+	memmove(encoded + sizeof(size_t), encoded, *encoded_len_out);
+	memcpy(encoded, &original_input_len, sizeof(size_t));
 	return encoded;
 }
 

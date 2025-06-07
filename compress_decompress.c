@@ -44,17 +44,7 @@ int compress(program_options_t *options)
 
 	free(file_data);
 
-	int ret = write(fd, &file_len, sizeof(size_t));
-	if (ret < 0)
-	{
-		snprintf(error_msg, sizeof(error_msg), "[-] Writing to file '%s' failed", options->output_file);
-		perror(error_msg);
-		free(encoded);
-		return 1;
-	}
-
-	ret = write(fd, encoded, encoded_len);
-	if (ret < 0)
+	if (write(fd, encoded, encoded_len) < 0)
 	{
 		snprintf(error_msg, sizeof(error_msg), "[-] Writing to file '%s' failed", options->output_file);
 		perror(error_msg);
@@ -114,7 +104,7 @@ int decompress(program_options_t *options)
 		return 1;
 	}
 
-	printf("[+] Compression done\n");
+	printf("[+] Decompression done\n");
 	free(data);
 	close(fd);
 	return 0;
