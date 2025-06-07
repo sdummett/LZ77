@@ -86,6 +86,14 @@ int parse_args(int argc, char *argv[], program_options_t *options)
 		}
 	}
 
+	if (options->lookahead_size > MAX_LOOKAHEAD_SIZE || options->search_size > MAX_SEARCH_SIZE)
+	{
+		fprintf(stderr, "requirements: lookahead_size <= %d, search_size <= %d\n",
+				MAX_LOOKAHEAD_SIZE, MAX_SEARCH_SIZE);
+		print_help(argv[0]);
+		return 0;
+	}
+
 	if (options->lookahead_size == 0)
 		options->lookahead_size = DEFAULT_LOOKAHEAD_SIZE;
 	if (options->search_size == 0)

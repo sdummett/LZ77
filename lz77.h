@@ -17,6 +17,16 @@
 #include <getopt.h>
 #include <stdbool.h>
 
+/* Ensure ‘lookahead_size’ never exceeds 128.
+ *   - The length field is packed into 7 bits of the flag byte
+ *     -> maximum real length = 2^7 − 1 + 1 = 128. */
+
+/* Ensure ‘search_size’ never exceeds 65 535.
+ *   - The match offset is stored in a 16-bit uint16_t
+ *     -> maximum backward distance = 65 535 bytes. */
+#define MAX_LOOKAHEAD_SIZE 128
+#define MAX_SEARCH_SIZE 65535
+
 /* Default sliding‑window sizes.
  * You are free to tweak those at run‑time via the program‑options structure.
  */
