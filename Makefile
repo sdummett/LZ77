@@ -7,7 +7,7 @@ TARGET := lz77
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
-CC      := gcc
+CC      := cc
 CFLAGS  := -Wall -Wextra -std=c11 -I$(INC_DIR)
 DEBUG_CFLAGS := $(CFLAGS) -g3
 
