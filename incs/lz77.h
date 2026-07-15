@@ -85,7 +85,7 @@ int compress(program_options_t *opt);
 int decompress(program_options_t *opt);
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-char *read_entire_file(const char *filename, size_t *out_size);
+uint8_t *read_entire_file(const char *filename, size_t *out_size);
 int parse_args(int argc, char *argv[], program_options_t *opt);
 
 #endif /* LZ77_H */

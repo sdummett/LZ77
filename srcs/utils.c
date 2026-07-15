@@ -1,6 +1,6 @@
 #include "lz77.h"
 
-char *read_entire_file(const char *filename, size_t *out_size)
+uint8_t *read_entire_file(const char *filename, size_t *out_size)
 {
 	char error_msg[256];
 	FILE *fp = fopen(filename, "rb"); // Open in binary mode
@@ -31,7 +31,7 @@ char *read_entire_file(const char *filename, size_t *out_size)
 
 	rewind(fp); // Go back to start of file
 
-	char *buffer = malloc(size);
+	uint8_t *buffer = malloc(size);
 	if (!buffer)
 	{
 		perror("[-] Allocating memory failed");
